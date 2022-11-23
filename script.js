@@ -1,3 +1,4 @@
+"use strict"
 const flipCard = document.querySelector(".flip-card");
 
 const foreignWord = document.querySelector("#card-front > h1");
@@ -12,95 +13,130 @@ const buttonNext = sliderControls.querySelector("#next");
 
 const spanCurrentWord = document.querySelector("#current-word");
 const spanTotalWord = document.querySelector("#total-word");
+let i = 1;
+const content = document.querySelector("#exam-cards");
 
-const obj = [
+const objects = [
     { ru: "горячий", eng: "hot", primer: "It's hot!" },
     { ru: "холодно", eng: "cold", primer: "Are you cold?" },
     { ru: "голодный", eng: "hungry", primer: "And are you hungry?" },
     { ru: "жаждущий", eng: "thirtsty", primer: "Are you thirtsty?" },
     { ru: "уставший", eng: "tired", primer: "I thought he sounded tired." },
+
 ];
 
-
+const objects2 = {
+    "hot": "горячий",
+    "cold": "холодно",
+    "hungry": "голодный",
+    "thirtsty": "жаждущий",
+    "tired": "уставший",
+}
 
 flipCard.addEventListener("click", function() {
     flipCard.classList.toggle('active');
 })
 
-let i = 1;
-
 function insertAWord() {
-    russianWord.textContent = (obj[i - 1][`ru`]);
-    foreignWord.textContent = (obj[i - 1][`eng`]);
-    exampleWord.textContent = (obj[i - 1][`primer`]);
+    russianWord.textContent = (objects[i - 1]["ru"]);
+    foreignWord.textContent = (objects[i - 1]["eng"]);
+    exampleWord.textContent = (objects[i - 1]["primer"]);
 }
-insertAWord()
+insertAWord();
 
 buttonNext.addEventListener("click", function() {
     if (i < 5) {
         spanCurrentWord.textContent = ++i;
     }
-    insertAWord()
+    if (i > 1) {
+        buttonBack.disabled = false;
+    }
+    if (i > 4) {
+        buttonNext.disabled = true;
+    }
+    insertAWord();
+
 })
 
 buttonBack.addEventListener("click", function() {
     if (i > 1) {
         spanCurrentWord.textContent = --i;
     }
+    if (i < 2) {
+        buttonBack.disabled = true;
+    }
+    if (i < 5) {
+        buttonNext.disabled = false;
+    }
     insertAWord()
 });
 
+const fragment = new DocumentFragment();
 
 function createCards() {
     sliderControls.classList.add("hidden");
     flipCard.classList.add("hidden");
-    obj.forEach((item) => {
-        const sliderRU = document.createElement('div');
-        sliderRU.classList.add("card");
-        sliderRU.textContent = (`${item.ru}`);
-        content.append(sliderRU);
+    for (let key in objects2) {
+        const value = objects2[key];
 
-        const sliderENG = document.createElement('div');
-        sliderENG.classList.add("card");
-        sliderENG.textContent = (`${item.eng}`);
-        content.append(sliderENG);
-    })
+        const sliderRu = document.createElement('div');
+        sliderRu.classList.add("card");
+        sliderRu.textContent = (`${key}`);
+        fragment.append(sliderRu);
+
+        const sliderEng = document.createElement('div');
+        sliderEng.classList.add("card");
+        sliderEng.textContent = (`${value}`);
+        fragment.append(sliderEng);
+    }
+    content.append(fragment);
 }
 
-const content = document.querySelector("#exam-cards");
 buttonExam.addEventListener("click", function() {
     createCards()
 })
 
-
-
+let firstWord;
+let secondWord;
 let variable = true;
+
+
 content.addEventListener("click", function(event) {
-    const target = event.target; // где был клик
-    //console.log(target);
+    const target = event.target;
     if (variable) {
-        //Первое нажатие console.log('1')
         variable = false;
-        target.classList.add("correct");
+        firstWord = target;
+        firstWord.classList.add("correct");
+    } else {
+        secondWord = target;
+        if (objects2[firstWord.textContent] === secondWord.textContent || objects2[secondWord.textContent] === firstWord.textContent) {
+            secondWord.classList.add("correct");
 
-    } else if (variable = true) {
-        //Второе нажатие console.log('2')
+            function removeCorrectCards() {
+                firstWord.classList.add("fade-out");
+                secondWord.classList.add("fade-out");
+            };
+            removeCorrectCards();
+
+        } else {
+            secondWord.classList.add("wrong");
+            setTimeout(() => {
+                firstWord.classList.remove("correct");
+                secondWord.classList.remove("wrong");
+            }, 500)
+        }
         variable = true;
-        target.classList.add("correct");
-
+        trackProgress();
     }
+});
 
-    console.log(Object.values(obj[0]))
-    for (let value of Object.values(obj[0])) {
-        console.log(value);
+let counter = 0;
+
+function trackProgress() {
+    if (firstWord.classList.contains('fade-out') || secondWord.classList.contains('fade-out')) {
+        counter++;
     }
-
-})
-
-
-// Если пара подобрана неверно, вторая карточка на секунду подсвечивается красным (класс `.wrong`), и тестирование  Где-то через 500ms подсветка с неправильно подобранной пары должна пропасть  
-//setTimeout(() => {
-//alert(`jt`);
-//clickOne.classList.remove("correct");
-//clickTwo.classList.remove("correct");
-//}, 500)
+    if (counter === 5) {
+        alert('Поздравляем! Вы успешно завершили проверку');
+    }
+}
