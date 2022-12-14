@@ -5,6 +5,8 @@ const foreignWord = document.querySelector("#card-front > h1");
 const russianWord = document.querySelector("#card-back > div > h1");
 const exampleWord = document.querySelector("#card-back > div > p > span");
 
+const sidebar = document.querySelector(".sidebar");
+
 const sliderControls = document.querySelector(".slider-controls");
 const buttonBack = sliderControls.querySelector("#back");
 const buttonExam = sliderControls.querySelector("#exam");
@@ -93,7 +95,8 @@ function createCards() {
 }
 
 buttonExam.addEventListener("click", function() {
-    createCards()
+    createCards();
+    sidebar.textContent = "";
 })
 
 let firstWord;
